@@ -21,15 +21,15 @@ RUN apt-get update && apt-get upgrade -y && \
         libxext6 \
         nano \
         curl \
+        gpg \
         && \
-    # Install MediaInfo
-    wget https://mediaarea.net/repo/deb/repo-mediaarea_1.0-21_all.deb && \
-    dpkg -i repo-mediaarea_1.0-21_all.deb && \
+    # Install MediaInfo with updated repository
+    curl -fsSL https://mediaarea.net/repo/deb/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/mediaarea-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mediaarea-keyring.gpg] https://mediaarea.net/repo/deb/debian bullseye main" > /etc/apt/sources.list.d/mediaarea.list && \
     apt-get update && \
     apt-get install -y mediainfo && \
     # Clean up
-    rm -rf /var/lib/apt/lists/* && \
-    rm repo-mediaarea_1.0-21_all.deb
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
