@@ -1,33 +1,62 @@
-version: "3"
+version: "3.8"
 
 services:
-    plex-utills:
-        image: jkirkcaldy/plex-utills
-        container_name: plex-utills
-        restart: unless-stopped
-        volumes: 
-            - <your config location>:/config
-            - <your log location>:/logs
-            ### WINDOWS ###
-            - films:/films
-            ### Linix ###
-            - <your Plex media directory>:/films:ro
-        environment: 
-            - TZ=Europe/London
-            - UID=1000
-            - GID=1000
-        ports:
-            - 80:80
-        cap_add:
-          - SYS_ADMIN
-          - DAC_READ_SEARCH
+  plex-utills:
+    build: .
+    # Alternatively, use the pre-built image:
+    # image: jkirkcaldy/plex-utills:latest
+    container_name: plex-utills
+    restart: unless-stopped
+    
+    volumes:
+      # Configuration and data
+      - ./config:/config
+      - ./logs:/logs
+      
+      # Media directory (Linux - read-only recommended)
+      - /path/to/your/plex/media:/films:ro
+      
+      # For Windows, uncomment the volumes section below instead
+      # and comment out the line above
+      
+    environment:
+      - TZ=Europe/London
+      - PUID=1000
+      - PGID=1000
+      
+    ports:
+      - "8080:80"  # Changed to 8080 to avoid conflicts
+      
+    # Security capabilities for media access
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+      
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+      
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
 
+# For Windows users - uncomment this section and comment out the volumes above
+# volumes:
+#   films:
+#     driver: local
+#     driver_opts:
+#       type: cifs
+#       o: username=<username>,password=<password>,ro,domain=localhost
+#       device: "\\\\<IP address>\\<share>"
 
-### WINDOWS ###
-volumes: 
-  films:
-    driver: local
-    driver_opts:
-      type: cifs
-      o: username=<username>,password=<password>,ro,domain=localhost
-      device: "\\\\<IP address>\\<share>"
+networks:
+  default:
+    name: plex-utills-network
