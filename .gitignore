@@ -114,3 +114,6 @@ test*.py
 *support.zip
 *.json
 *.png
+backups/
+fix_flask_context.sh
+verify_fixes.py

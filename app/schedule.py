@@ -17,7 +17,7 @@ scheduler.init_app(app)
    
 if not scheduler.running:
     scheduler.start()
-scheduler.add_job('maintenance', func=maintenance, trigger=CronTrigger.from_crontab('0 4 * * *'))
+scheduler.add_job('maintenance', func=maintenance, args=[app], trigger=CronTrigger.from_crontab('0 4 * * *'))
 def update_scheduler(app):
     with app.app_context():
         config = Plex.query.filter(Plex.id == '1')

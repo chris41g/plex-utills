@@ -23,11 +23,10 @@ import string
 def setup_logger(logger_name, log_file):
     import sqlite3
     try:
-        conn = sqlite3.connect('/config/app.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM plex_utills")
-        config = c.fetchall()
-        if config[0][36] == 1:
+        from app.models import Plex
+
+        config = Plex.query.filter(Plex.id == "1").all()
+        if config[0].loglevel == 1:
             loglevel = 'DEBUG'
         else:
             loglevel = 'INFO'
@@ -76,7 +75,7 @@ def posters4k(app, webhooktitle, poster_var):
         from app.models import Plex, film_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         global b_dir
         tmdb.api_key = config[0].tmdb_api
@@ -363,7 +362,16 @@ def guid_to_title(app, var):
             def run_script():
                 tv_episode_poster(app, var, '')
 
-            lib = config[0].tvlibrary.split(',')
+            tvlib = config[0].tvlibrary
+
+
+            if not tvlib or not tvlib.strip():
+
+
+                return []
+
+
+            lib = tvlib.split(',')
             logger.debug(lib)
             n = len(lib)
             if n <= 2:
@@ -378,7 +386,16 @@ def guid_to_title(app, var):
             def run_script():
                 tv_episode_poster(app, var, '')
 
-            lib = config[0].tvlibrary.split(',')
+            tvlib = config[0].tvlibrary
+
+
+            if not tvlib or not tvlib.strip():
+
+
+                return []
+
+
+            lib = tvlib.split(',')
             logger.debug(lib)
             n = len(lib)
             if n <= 2:
@@ -397,7 +414,7 @@ def tv_episode_poster(app, epwebhook, poster):
         from app.models import Plex, ep_table, season_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         banner_4k_icon = Image.open("app/img/tv/4k.png")
         banner_bg = Image.open("app/img/tv/Background.png")
@@ -646,7 +663,16 @@ def tv_episode_poster(app, epwebhook, poster):
             #module.clear_old_posters()  
             logger.info("tv Poster Script has finished")
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -662,7 +688,7 @@ def restore_episodes_from_database(app, b_dir):
         from app.models import Plex, ep_table
         from app import db, module
         from tmdbv3api import TMDb, Search, Movie, Discover, TV, Episode
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         tmdb = TMDb()
@@ -769,7 +795,16 @@ def restore_episodes_from_database(app, b_dir):
 
             logger.info('Finished restoring TV Posters')
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -786,7 +821,7 @@ def restore_episode_from_database(app, var):
         from app.models import Plex, ep_table
         from app import db, module
         from tmdbv3api import TMDb, Search, Movie, Discover, TV, Episode
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb = TMDb()
         poster_url_base = 'https://www.themoviedb.org/t/p/original'
@@ -883,7 +918,16 @@ def restore_episode_from_database(app, var):
                         restore_tmdb('', b_file)
             logger.info('Finished restoring TV Posters')
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -898,7 +942,7 @@ def restore_episode_from_database(app, var):
 def posters3d(app): 
     with app.app_context():
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
@@ -1010,7 +1054,7 @@ def restore_from_database(app):
     with app.app_context():    
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         films = plex.library.section('Films')
         def convert_data(data, file_name):
@@ -1050,7 +1094,7 @@ def restore_from_database(app):
 def restore_single(var):
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         def run_script():
             for i in films.search(guid=var):
@@ -1087,7 +1131,7 @@ def restore_single(var):
 def restore_single_bannered(app, var):
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1131,7 +1175,7 @@ def restore_seasons(app):
         from app.models import Plex, season_table
         from app import db, module
         tmdbtvs = Season()
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         def run_script():
             advanced_filters = {
@@ -1177,7 +1221,13 @@ def restore_seasons(app):
                         except Exception as e:
                             logger.error(repr(e))
                             pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1192,7 +1242,7 @@ def restore_seasons(app):
 def restore_single_season(app, var):
         from app.models import Plex, season_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         def run_script():
             for i in tv.search(guid=var, libtype='season', limit=1):
@@ -1212,7 +1262,13 @@ def restore_single_season(app, var):
                     db.session.commit()
                 except (TypeError, IndexError, FileNotFoundError) as e:
                     logger.error(repr(e)) 
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+ 
+        if not tvlib or not tvlib.strip():
+ 
+            return []
+ 
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1227,7 +1283,7 @@ def restore_single_season(app, var):
 def restore_single_bannered_season(app, var):
         from app.models import Plex, season_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1251,7 +1307,16 @@ def restore_single_bannered_season(app, var):
                     logger.error(repr(e)) 
                     return msg
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1266,7 +1331,7 @@ def restore_single_bannered_season(app, var):
 def restore_single_bannered_episode(app, var):
         from app.models import Plex, ep_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1291,7 +1356,16 @@ def restore_single_bannered_episode(app, var):
                     logger.error(repr(e)) 
                     return msg
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1306,7 +1380,7 @@ def restore_single_bannered_episode(app, var):
 def hide4k(app):
     with app.app_context(): 
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
         def run_script():
@@ -1356,7 +1430,7 @@ def hide4k(app):
 def fresh_hdr_posters(app):
     with app.app_context(): 
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
@@ -1414,7 +1488,7 @@ def autocollections(app):
     with app.app_context(): 
         logger.info('Autocollections has started')
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
@@ -1642,7 +1716,7 @@ def test_script(app):
     with app.app_context(): 
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         films = plex.library.section('films')
 
@@ -1700,7 +1774,7 @@ def fill_database(app):
                     except TypeError:
                         logger.info("RESTORE: "+i.title+" This poster could not be found on TheMoviedb")
                         pass                            
-                def scan_files():
+                def scan_files(config, i, plex):
                         try:
                             logger.debug('Scanning '+i.title)
                             file = re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file)
@@ -1953,7 +2027,7 @@ def fill_database(app):
                         insert_intoTable(hdr, audio, tmp_poster)
                     else:
                         try:
-                            scan = scan_files()
+                            scan = module.scan_files(config, i, plex)
                             audio = scan[0]
                             hdr = str.lower(scan[1])
                         except Exception as e:
@@ -2008,7 +2082,7 @@ def add_labels(app):
     with app.app_context(): 
 
         from app.models import Plex, film_table
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         def run_script():
             logger.info('Adding Film Labels')
@@ -2039,14 +2113,43 @@ def add_labels(app):
             except IndexError:
                 pass 
 
-def maintenance():
+def maintenance(app):
+    with app.app_context():
         from app.models import Plex, film_table, ep_table, season_table
         from app import db, module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
-        plex.runButlerTask('CleanOldCacheFiles') 
-        plex.runButlerTask('CleanOldBundles')
-        lib = config[0].filmslibrary.split(',')
+        try:
+
+            plex.runButlerTask('CleanOldCacheFiles')
+
+            logger.info("Butler task 'CleanOldCacheFiles' queued successfully")
+
+        except Exception as e:
+
+            if "202" in str(e) or "accepted" in str(e).lower():
+
+                logger.info("Butler task 'CleanOldCacheFiles' accepted by Plex (HTTP 202)")
+
+            else:
+
+                logger.warning(f"Butler task 'CleanOldCacheFiles' failed: {e}")
+        try:
+
+            plex.runButlerTask('CleanOldBundles')
+
+            logger.info("Butler task 'CleanOldBundles' queued successfully")
+
+        except Exception as e:
+
+            if "202" in str(e) or "accepted" in str(e).lower():
+
+                logger.info("Butler task 'CleanOldBundles' accepted by Plex (HTTP 202)")
+
+            else:
+
+                logger.warning(f"Butler task 'CleanOldBundles' failed: {e}")
+        
         def clean_database(table, library):
             r = table.query.all()
             for i in r:
@@ -2055,7 +2158,7 @@ def maintenance():
                     pass
                     #print(f.title+" exists")
                 else:
-                    logger.info("Removing "+i.title+"from database")
+                    logger.info("Removing "+i.title+" from database")
                     poster = re.sub("static", "/config", i.poster)
                     b_poster = re.sub("static", "/config", i.bannered_poster)
                     try:
@@ -2068,27 +2171,44 @@ def maintenance():
                         row = table.query.get(i.id)
                         db.session.delete(row)
                         db.session.commit()
-                    except: db.session.rollback()  
+                    except: 
+                        db.session.rollback()
+        
+        # Clean film database
+        lib = config[0].filmslibrary.split(',')
         n = len(lib)
         if n <= 2:
             try:
-                ##while true:
-                    for l in range(n):
-                        films = plex.library.section(lib[l])
-                        clean_database(film_table, films)
+                for l in range(n):
+                    films = plex.library.section(lib[l])
+                    clean_database(film_table, films)
             except IndexError:
-                pass          
-        tvlib = config[0].tvlibrary.split(',')
-        logger.debug(lib)
-        if len(tvlib) <= 2:
-            try:
-                ##while true:
-                    for l in range(10):
-                        tv = plex.library.section(lib[l])
+                pass
+        
+        # Clean TV database ONLY if TV features are enabled
+        tvlib = config[0].tvlibrary
+        if tvlib and tvlib.strip():  # Check if TV library is configured
+            tvlib_list = tvlib.split(',')
+            tv_n = len(tvlib_list)
+            
+            # Only scan TV if any TV-related features are enabled
+            tv_features_enabled = (
+                config[0].tv4kposters == 1 or
+                getattr(config[0], 'spoilers', 0) == 1
+            )
+            
+            if tv_features_enabled and tv_n <= 2:
+                try:
+                    for l in range(tv_n):  # Use actual number of TV libraries
+                        tv = plex.library.section(tvlib_list[l])  # Use correct TV library variable
                         clean_database(ep_table, tv)
                         clean_database(season_table, tv)
-            except IndexError:
-                pass 
+                except IndexError:
+                    pass
+            else:
+                logger.info("TV features disabled, skipping TV database cleanup")
+        else:
+            logger.info("No TV library configured, skipping TV database cleanup")
 
         module.clear_old_posters()
 
@@ -2098,7 +2218,7 @@ def collective4k(app):
         from time import sleep
         sleep(5)
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         if config[0].tv4kposters == 1:
             logger.info('Starting 4k Tv poster script')
             tv_episode_poster(app, '', '')
@@ -2107,7 +2227,7 @@ def restore_posters(app):
     with app.app_context(): 
         from app.models import Plex, film_table
         from app import db, module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api   
 
@@ -2238,7 +2358,7 @@ def spoilers(app, guid):
         from app.models import Plex, ep_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         size = (1280,720)
@@ -2313,7 +2433,7 @@ def get_tv_guid(tv_show, season, episode):
         from app.models import Plex, ep_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         for ep in tv.search(filters={"show.title":tv_show, "episode.index":episode, "season.index":season}):
@@ -2362,7 +2482,7 @@ def sync_ratings(app):
     with app.app_context():        
         from app.models import Plex
         from app import module
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
         films = plex.library.section('Films')
@@ -2436,7 +2556,7 @@ def backup_poster_check(app):
 
 def get_tmdb_show_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
     tmdbtvs = TV()
     def run_script():
@@ -2457,7 +2577,13 @@ def get_tmdb_show_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2472,8 +2598,14 @@ def get_tmdb_show_posters(var):
 
 def get_tmdb_season_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tmdb_season_posters")
+        return []
     tmdbtvs = Season()
     def run_script():
         posters = []
@@ -2494,7 +2626,13 @@ def get_tmdb_season_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2509,8 +2647,14 @@ def get_tmdb_season_posters(var):
 
 def get_tmdb_episode_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tmdb_episode_posters")
+        return []
     tmdbtv = Episode()
     def run_script():
         posters = []
@@ -2533,7 +2677,13 @@ def get_tmdb_episode_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2548,7 +2698,7 @@ def get_tmdb_episode_posters(var):
 
 def get_tmdb_film_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
     tmdb = Movie()
     def run_script():
@@ -2586,7 +2736,7 @@ def upload_tmdb_season(app, var):
 
         from app import db, module
         from app.models import season_table, ep_table, Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         size = (2000,3000)
         parts = var.split('&')
@@ -2634,7 +2784,13 @@ def upload_tmdb_season(app, var):
             except Exception as e:
                 logger.error("Season poster Error: "+repr(e))
                 pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -2649,7 +2805,7 @@ def upload_tmdb_season(app, var):
 def upload_tmdb_film(app, var):
         from app import db, module
         from app.models import film_table, Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         size = (2000,3000)
         parts = var.split('&')
@@ -2705,7 +2861,7 @@ def upload_tmdb_film(app, var):
 def upload_tmdb_episode(app, var):
         from app import db, module
         from app.models import season_table, ep_table, Plex
-        config = Plex.query.filter(Plex.id == '1')
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config[0].plexurl, config[0].token)
         size = (1280,720)
         parts = var.split('&')
@@ -2764,7 +2920,13 @@ def upload_tmdb_episode(app, var):
             except Exception as e:
                 logger.error("Episode poster Error: "+repr(e))
                 pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -2779,7 +2941,7 @@ def upload_tmdb_episode(app, var):
 def get_film_posters():
 
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
     from app.items import Film
     films = []
@@ -2794,7 +2956,7 @@ def get_film_posters():
     if n <= 2:
         try:
             for l in range(n):
-                film_lib= plex.library.section(lib[l])
+                film_lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 films = run_script()
             return films
         except IndexError:
@@ -2802,22 +2964,44 @@ def get_film_posters():
 
 def get_shows():
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
     from app.items import Shows
     shows = []
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_shows")
+        return []
+    
     def run_script():
-        
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='show'):
             shows.append(Shows(i.title, i.guid, i.thumbUrl, ''))
         return shows   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 shows = run_script()
             return shows
         except IndexError:
@@ -2825,22 +3009,44 @@ def get_shows():
 
 def get_tv_seasons(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tv_seasons")
+        return []
     from app.items import Season
     seasons = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='season', filters={"show.guid":var}):
             show_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             seasons.append(Season(i.title, i.parentTitle, i.guid, i.thumbUrl, '', show_poster, i.parentGuid))
         return seasons   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2848,22 +3054,44 @@ def get_tv_seasons(var):
   
 def get_tv_episodes(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tv_episodes")
+        return []
     from app.items import Episode
     episodes = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='episode', filters={"season.guid":var}):
             season_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             episodes.append(Episode(i.title, i.parentTitle, i.grandparentTitle, i.guid, i.thumbUrl, '', season_poster, i.parentGuid))
         return episodes   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:
@@ -2871,22 +3099,44 @@ def get_tv_episodes(var):
 
 def get_season_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_season_posters")
+        return []
     from app.items import Season
     seasons = []    
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='season', guid=var):
             show_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             seasons.append(Season(i.title, i.parentTitle, i.guid, i.thumbUrl, '', show_poster, i.parentGuid))
         return seasons   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2894,22 +3144,44 @@ def get_season_posters(var):
 
 def get_episode_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_episode_posters")
+        return []
     from app.items import Episode
     episodes = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='episode', guid=var):
             season_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             episodes.append(Episode(i.title, i.parentTitle, i.grandparentTitle, i.guid, i.thumbUrl, '', season_poster, i.parentGuid))
         return episodes   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:

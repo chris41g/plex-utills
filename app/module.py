@@ -14,42 +14,81 @@ import time
 from app.models import Plex
 
 
+# REMOVED: These module-level database queries cause Flask application context errors
+# config = Plex.query.filter(Plex.id == '1')
+# plex = PlexServer(config[0].plexurl, config[0].token)
 
-
-config = Plex.query.filter(Plex.id == '1')
-plex = PlexServer(config[0].plexurl, config[0].token)
+# Initialize TMDB globals (these don't require Flask context)
 tmdb = TMDb()
 poster_url_base = 'https://www.themoviedb.org/t/p/original'
 search = Search()
 movie = Movie()
 discover = Discover()
 tmdbtv = Episode()
-from app.scripts import logger
- 
 
-banner_4k = cv2.imread("app/img/4K-Template.png", cv2.IMREAD_UNCHANGED)
-banner_4k = Image.fromarray(banner_4k)
-mini_4k_banner = cv2.imread("app/img/4K-mini-Template.png", cv2.IMREAD_UNCHANGED)
-mini_4k_banner = Image.fromarray(mini_4k_banner)
-banner_dv = cv2.imread("app/img/dolby_vision.png", cv2.IMREAD_UNCHANGED)
-banner_dv = Image.fromarray(banner_dv)
-banner_hdr10 = cv2.imread("app/img/hdr10.png", cv2.IMREAD_UNCHANGED)
-banner_hdr10 = cv2.cvtColor(banner_hdr10, cv2.COLOR_BGR2RGBA)
-banner_hdr10 = Image.fromarray(banner_hdr10)
+# Initialize image globals as None - will be loaded when needed
+banner_4k = None
+mini_4k_banner = None
+banner_dv = None
+banner_hdr10 = None
+banner_new_hdr = None
+atmos = None
+dtsx = None
 
-banner_new_hdr = cv2.imread("app/img/hdr.png", cv2.IMREAD_UNCHANGED)
-banner_new_hdr = Image.fromarray(banner_new_hdr)
-atmos = cv2.imread("app/img/atmos.png", cv2.IMREAD_UNCHANGED)
-atmos = Image.fromarray(atmos)
-dtsx = cv2.imread("app/img/dtsx.png", cv2.IMREAD_UNCHANGED)
-dtsx = Image.fromarray(dtsx)
+# Constants
 size = (2000,3000)
-bannerbox= (0,0,2000,220)
+bannerbox = (0,0,2000,220)
 mini_box = (0,0,350,275)
 hdr_box = (0,1342,493,1608)
 a_box = (0,1608,493,1766)
 cutoff = 7
 
+def get_config():
+    """Get Plex configuration from database - must be called within Flask app context"""
+    return Plex.query.filter(Plex.id == '1').first()
+
+def get_plex_server():
+    """Get PlexServer instance - must be called within Flask app context"""
+    config = get_config()
+    return PlexServer(config.plexurl, config.token)
+
+def get_logger():
+    """Get logger to avoid circular import issues"""
+    from app.scripts import logger
+    return logger
+
+def load_image_assets():
+    """Load image assets when needed"""
+    global banner_4k, mini_4k_banner, banner_dv, banner_hdr10, banner_new_hdr, atmos, dtsx
+    
+    if banner_4k is None:
+        banner_4k = cv2.imread("app/img/4K-Template.png", cv2.IMREAD_UNCHANGED)
+        banner_4k = Image.fromarray(banner_4k)
+        
+    if mini_4k_banner is None:
+        mini_4k_banner = cv2.imread("app/img/4K-mini-Template.png", cv2.IMREAD_UNCHANGED)
+        mini_4k_banner = Image.fromarray(mini_4k_banner)
+        
+    if banner_dv is None:
+        banner_dv = cv2.imread("app/img/dolby_vision.png", cv2.IMREAD_UNCHANGED)
+        banner_dv = Image.fromarray(banner_dv)
+        
+    if banner_hdr10 is None:
+        banner_hdr10 = cv2.imread("app/img/hdr10.png", cv2.IMREAD_UNCHANGED)
+        banner_hdr10 = cv2.cvtColor(banner_hdr10, cv2.COLOR_BGR2RGBA)
+        banner_hdr10 = Image.fromarray(banner_hdr10)
+        
+    if banner_new_hdr is None:
+        banner_new_hdr = cv2.imread("app/img/hdr.png", cv2.IMREAD_UNCHANGED)
+        banner_new_hdr = Image.fromarray(banner_new_hdr)
+        
+    if atmos is None:
+        atmos = cv2.imread("app/img/atmos.png", cv2.IMREAD_UNCHANGED)
+        atmos = Image.fromarray(atmos)
+        
+    if dtsx is None:
+        dtsx = cv2.imread("app/img/dtsx.png", cv2.IMREAD_UNCHANGED)
+        dtsx = Image.fromarray(dtsx)
 
 def get_tmdb_guid(g):
     g = g[1:-1]
@@ -61,10 +100,15 @@ def get_tmdb_guid(g):
     g = str(g[0])
     gv = [v for v in g if v.isnumeric()]
     g = "".join(gv)
+    logger = get_logger()
     logger.debug(g)
     return g
     
 def tmdb_poster_path(b_dir, i, g, episode, season):
+    logger = get_logger()
+    config = get_config()
+    tmdb.api_key = config.tmdb_api
+    
     if episode == '':
         logger.debug("is a film")
         tmdb_search = movie.details(movie_id=g)
@@ -87,6 +131,7 @@ def tmdb_poster_path(b_dir, i, g, episode, season):
         return poster
 
 def get_tmdb_poster(fname, poster):
+    logger = get_logger()
     req = requests.get(poster_url_base+poster, stream=True)
     logger.debug("tmdb: "+poster_url_base+poster)
     logger.debug(fname)
@@ -99,6 +144,7 @@ def get_tmdb_poster(fname, poster):
         logger.error("Can't get poster from TMDB")
 
 def check_banners(tmp_poster, size):
+    logger = get_logger()
     try:
         background = cv2.imread(tmp_poster, cv2.IMREAD_ANYCOLOR)
         background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
@@ -130,7 +176,7 @@ def check_banners(tmp_poster, size):
         chk_hdr = Image.open("app/img/chk_hdr.png")
         chk_hdr_hash = imagehash.average_hash(chk_hdr)
         chk_dolby_vision = Image.open("app/img/chk_dolby_vision.png")
-        chk_dolby_vision_hash = imagehash.average_hash  (chk_dolby_vision)
+        chk_dolby_vision_hash = imagehash.average_hash(chk_dolby_vision)
         chk_hdr10 = Image.open("app/img/chk_hdr10.png")
         chk_hdr10_hash = imagehash.average_hash(chk_hdr10)
         chk_new_hdr = Image.open("app/img/chk_hdr_new.png")
@@ -163,6 +209,9 @@ def check_banners(tmp_poster, size):
         logger.error('Cannot open image: '+repr(e))
 
 def get_poster(i, tmp_poster, title, b_dir, height, width, r):
+    logger = get_logger()
+    plex = get_plex_server()
+    
     logger.debug(i.title+' Getting poster')
     imgurl = plex.transcodeImage(
         i.thumbUrl,
@@ -224,34 +273,38 @@ def get_poster(i, tmp_poster, title, b_dir, height, width, r):
             return tmp_poster, valid
     
 def get_season_poster(ep, tmp_poster, config):
-        logger.debug(ep.title+' Getting poster')
-        title = ep.title
-        height=3000
-        width=2000
-        #logger.debug(config[0].plexurl+ep.parentThumb+'?X-Plex-Token='+config[0].token)
-        imgurl = plex.transcodeImage(
-            config[0].plexurl+ep.parentThumb+'?X-Plex-Token='+config[0].token,
-            height=height,
-            width=width,
-            imageFormat='png'
-        )
-        img = requests.get(imgurl, stream=True)
-        filename = tmp_poster
-        try:
-            if img.status_code == 200:
-                img.raw.decode_content = True
-                with open(filename, 'wb') as f:                        
-                    for chunk in img:
-                        f.write(chunk)
-                return tmp_poster 
-            else:
-                logger.info("Get Poster: "+title+ ' - cannot find the poster for this film')
-        except OSError as e:
-            logger.error('Get Poster OSError: '+repr(e))
-        except Exception as e:
-            logger.error('Get Poster Exception: '+repr(e))    
+    logger = get_logger()
+    plex = get_plex_server()
+    
+    logger.debug(ep.title+' Getting poster')
+    title = ep.title
+    height=3000
+    width=2000
+    #logger.debug(config.plexurl+ep.parentThumb+'?X-Plex-Token='+config.token)
+    imgurl = plex.transcodeImage(
+        config.plexurl+ep.parentThumb+'?X-Plex-Token='+config.token,
+        height=height,
+        width=width,
+        imageFormat='png'
+    )
+    img = requests.get(imgurl, stream=True)
+    filename = tmp_poster
+    try:
+        if img.status_code == 200:
+            img.raw.decode_content = True
+            with open(filename, 'wb') as f:                        
+                for chunk in img:
+                    f.write(chunk)
+            return tmp_poster 
+        else:
+            logger.info("Get Poster: "+title+ ' - cannot find the poster for this film')
+    except OSError as e:
+        logger.error('Get Poster OSError: '+repr(e))
+    except Exception as e:
+        logger.error('Get Poster Exception: '+repr(e))    
 
 def get_plex_hdr(i, plex):
+    logger = get_logger()
     ekey = i.key
     m = plex.fetchItems(ekey)
     for m in m:
@@ -277,6 +330,7 @@ def get_plex_hdr(i, plex):
             pass
 
 def validate_image(tmp_poster):
+    logger = get_logger()
     try:
         img = Image.open(tmp_poster)
         img.verify()
@@ -290,6 +344,7 @@ def validate_image(tmp_poster):
         return valid
 
 def upload_poster(tmp_poster, title, db, r, table, i, banner_file):
+    logger = get_logger()
     logger.debug("UPLOAD POSTER")
     logger.debug(tmp_poster)
     logger.debug(banner_file)
@@ -335,6 +390,7 @@ def upload_poster(tmp_poster, title, db, r, table, i, banner_file):
         logger.error("Can't upload the poster: "+repr(e))         
 
 def scan_files(config, i, plex):
+    logger = get_logger()
     logger.debug('Scanning '+i.title)
     p = PureWindowsPath(i.media[0].parts[0].file)
     p1 = re.findall('[A-Z]', p.parts[0])
@@ -356,13 +412,13 @@ def scan_files(config, i, plex):
             except (KeyError, IndexError):
                 if "dolby" not in str.lower(hdr_version):
                     try:
-                        hdr_version = x['media']['track'][1]    ['HDR_Format_Commercial']
+                        hdr_version = x['media']['track'][1]['HDR_Format_Commercial']
                     except (KeyError, IndexError):
                         try:
-                            hdr_version = x['media']['track'][1]        ['HDR_Format_Commercial_IfAny']
+                            hdr_version = x['media']['track'][1]['HDR_Format_Commercial_IfAny']
                         except (KeyError, IndexError):
                             try:
-                                hdr_version = x['media']['track'][1]        ['HDR_Format_Compatibillity']
+                                hdr_version = x['media']['track'][1]['HDR_Format_Compatibillity']
                             except:
                                 pass
         elif not hdr_version:
@@ -372,9 +428,9 @@ def scan_files(config, i, plex):
             while True:
                 for f in range(10):
                     if 'Audio' in x['media']['track'][f]['@type']:
-                        if 'Format_Commercial_IfAny' in x['media']  ['track'][f]:
-                            audio = x['media']['track'][f]  ['Format_Commercial_IfAny']
-                            if 'XLL X' in x['media']['track'][f]    ["Format_AdditionalFeatures"]:
+                        if 'Format_Commercial_IfAny' in x['media']['track'][f]:
+                            audio = x['media']['track'][f]['Format_Commercial_IfAny']
+                            if 'XLL X' in x['media']['track'][f]["Format_AdditionalFeatures"]:
                                 audio = 'DTS:X'
                             break
                         elif 'Format' in x['media']['track'][f]:
@@ -391,6 +447,7 @@ def scan_files(config, i, plex):
     return audio, hdr_version
 
 def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, guid):
+    logger = get_logger()
     logger.debug("BACKUP")
     logger.debug(banners)
     if 'episode' in guid:
@@ -403,10 +460,10 @@ def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, 
         fname = re.sub('plex://season/', '', guid)
     logger.debug(fname)
     
-    if config[0].manualplexpath == 1:
-        newdir = os.path.dirname(re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file))+'/'
+    if config.manualplexpath == 1:
+        newdir = os.path.dirname(re.sub(config.manualplexpathfield, '/films', i.media[0].parts[0].file))+'/'
     else:
-        newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
+        newdir = os.path.dirname(re.sub(config.plexpath, '/films', i.media[0].parts[0].file))+'/'
     try:
         old_backup = os.path.exists(newdir+'poster_bak.png')
         if old_backup == True:
@@ -466,7 +523,7 @@ def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, 
                 return b_file                        
         else:
             logger.debug('not in database')
-            if (config[0].tmdb_restore == 1 and old_backup == False):
+            if (config.tmdb_restore == 1 and old_backup == False):
                 try:
                     logger.info('Poster has banners, creating a backup from TheMovieDB')
                     g = get_tmdb_guid(str(g))
@@ -483,6 +540,9 @@ def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, 
                 logger.warning("Creating backup file from TMDb didn't work")
 
 def insert_intoTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, title, config, table, db, r, i, b_dir, g, blurred, episode, season):
+    logger = get_logger()
+    plex = get_plex_server()
+    
     logger.debug(table)
     logger.debug(tmp_poster)
     url = "https://app.plex.tv/desktop#!/server/"+str(plex.machineIdentifier)+'/details?key=%2Flibrary%2Fmetadata%2F'+str(i.ratingKey)
@@ -491,10 +551,10 @@ def insert_intoTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, ti
     p1 = re.findall('[A-Z]', p.parts[0])    
     if p1 != []:
         newdir = PurePosixPath('/films', *p.parts[1:])
-    elif config[0].manualplexpath == 1:
-        newdir = re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file)
+    elif config.manualplexpath == 1:
+        newdir = re.sub(config.manualplexpathfield, '/films', i.media[0].parts[0].file)
     else:
-        newdir = re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file)           
+        newdir = re.sub(config.plexpath, '/films', i.media[0].parts[0].file)           
     logger.debug(title+' '+hdr+' '+audio)
     if blurred == False:  
         b_file = backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, guid)
@@ -524,6 +584,9 @@ def insert_intoTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, ti
         db.session.close()
 
 def updateTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, title, config, table, db, r, i, b_dir, g, blurred, episode, season):
+    logger = get_logger()
+    plex = get_plex_server()
+    
     db.session.close()
     url = "https://app.plex.tv/desktop#!/server/"+str(plex.machineIdentifier)+'/details?key=%2Flibrary%2Fmetadata%2F'+str(i.ratingKey)
     logger.debug(title+' final pre-database checks')
@@ -591,6 +654,7 @@ def blur(tmp_poster, r, table, db, guid):
     return poster
 
 def check_tv_banners(i, tmp_poster, img_title):
+    logger = get_logger()
 
     box_4k= (42,45,290,245)
     hdr_box = (32,440,303,559)
@@ -653,6 +717,7 @@ def check_tv_banners(i, tmp_poster, img_title):
     return banner_4k, audio_banner, hdr_banner
 
 def add_bannered_poster_to_db(tmp_poster, db, title, table, guid, banner_file):
+    logger = get_logger()
     logger.debug(banner_file)
     shutil.copy(tmp_poster, banner_file)
     try:    
@@ -660,12 +725,13 @@ def add_bannered_poster_to_db(tmp_poster, db, title, table, guid, banner_file):
         r = table.query.filter(table.guid == guid).all()
         row = r[0].id
         media = table.query.get(row)       
-        media.bannered_poster = re.sub('/config','static',     banner_file)
+        media.bannered_poster = re.sub('/config','static', banner_file)
         db.session.commit()   
     finally:
         db.session.close()
 
 def add_season_to_db(db, title, table, pguid, banner_file, poster):
+    logger = get_logger()
     try:    
         logger.debug('Updating '+title+' in database')
         r = table.query.filter(table.guid == pguid).all()  
@@ -695,6 +761,7 @@ def add_season_to_db(db, title, table, pguid, banner_file, poster):
         db.session.close() 
 
 def check_for_new_poster(tmp_poster, r, i, table, db):
+    logger = get_logger()
     new_poster = 'False'
     if r:
         try:
@@ -753,6 +820,7 @@ def check_for_new_poster(tmp_poster, r, i, table, db):
     return new_poster
 
 def bannered_poster_compare(bannered_poster, r, i):
+    logger = get_logger()
     new_poster = 'False'
     cutoff = 10
     clean_poster = ''
@@ -815,6 +883,9 @@ def bannered_poster_compare(bannered_poster, r, i):
     return new_poster
 
 def season_decision_tree(config, banners, ep, hdr, res, tmp_poster):
+    logger = get_logger()
+    load_image_assets()  # Load images when needed
+    
     wide_banner = banners[0]
     mini_banner = banners[1]
     hdr_banner = banners[3]
@@ -822,7 +893,7 @@ def season_decision_tree(config, banners, ep, hdr, res, tmp_poster):
     logger.debug(banners)
     logger.debug("Decision tree")    
 
-    if (hdr != 'none' and config[0].hdr == 1 and hdr_banner == False):
+    if (hdr != 'none' and config.hdr == 1 and hdr_banner == False):
         logger.info(ep.title+" HDR Banner")
         try:
             size = (2000,3000)
@@ -836,14 +907,14 @@ def season_decision_tree(config, banners, ep, hdr, res, tmp_poster):
             logger.error('HDR Poster error: '+repr(e))
     else:
         logger.debug("Not adding hdr season banner")
-    if (res == '4k' and config[0].films4kposters == 1 and wide_banner == mini_banner == False):
+    if (res == '4k' and config.films4kposters == 1 and wide_banner == mini_banner == False):
         try:
             size = (2000,3000)
             background = cv2.imread(tmp_poster, cv2.IMREAD_ANYCOLOR)#Image.open(tmp_poster)
             background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
             background = Image.fromarray(background)
             background = background.resize(size,Image.LANCZOS)
-            if config[0].mini4k == 1:
+            if config.mini4k == 1:
                 logger.info(ep.title+' Adding Mini 4K Banner')
                 background.paste(mini_4k_banner, (0,0), mini_4k_banner)
                 background.save(tmp_poster)
@@ -881,13 +952,16 @@ def final_poster_compare(tmp_poster, plex_poster):
     plex_poster_hash = imagehash.average_hash(plex_poster)
 
     if new_poster_hash == plex_poster_hash:
+        logger = get_logger()
         logger.debug('Poster is good to upload')
         return True
     else:
+        logger = get_logger()
         logger.debug('poster is fucked')
         return False
 
 def open_poster(tmp_poster, size):
+    logger = get_logger()
     try:
         background = cv2.imread(tmp_poster, cv2.IMREAD_ANYCOLOR)
         background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
@@ -898,6 +972,7 @@ def open_poster(tmp_poster, size):
         logger.error(repr(e)) 
 
 def add_banner(tmp_poster, banner, size):
+    logger = get_logger()
     try:
         background = open_poster(tmp_poster, size)     
         background.paste(banner, (0, 0), banner)
@@ -907,6 +982,9 @@ def add_banner(tmp_poster, banner, size):
         logger.error('Poster Background error: '+repr(e))    
 
 def tv_banner_decision(ep, tmp_poster, banners, audio, hdr, resolution, poster_size):
+    logger = get_logger()
+    config = get_config()
+    
     banner_4k_icon = Image.open("app/img/tv/4k.png")
     banner_bg = Image.open("app/img/tv/Background.png")
     banner_dv = Image.open("app/img/tv/dolby_vision.png")
@@ -928,15 +1006,15 @@ def tv_banner_decision(ep, tmp_poster, banners, audio, hdr, resolution, poster_s
         logger.debug(ep.title+' has 4k banner')
     if (
        audio_banner == False 
-       and config[0].audio_posters == 1
+       and config.audio_posters == 1
        ) or (
        hdr_banner == False
-       and config[0].hdr ==1
+       and config.hdr ==1
        ):
         if audio_banner == False:
-               if 'Atmos' in audio and config[0].audio_posters == 1:
+               if 'Atmos' in audio and config.audio_posters == 1:
                    add_banner(tmp_poster, atmos, poster_size)
-               elif audio == 'DTS:X' and config[0].audio_posters == 1:
+               elif audio == 'DTS:X' and config.audio_posters == 1:
                    add_banner(tmp_poster, dtsx, poster_size)
         elif 'Atmos' in audio:
                ep.addLabel('Dolby Atmos', locked=False)
@@ -945,11 +1023,11 @@ def tv_banner_decision(ep, tmp_poster, banners, audio, hdr, resolution, poster_s
         if hdr_banner == False:
             try:
                 logger.debug(hdr)
-                if 'dolby vision' in hdr and config[0].hdr == 1:
+                if 'dolby vision' in hdr and config.hdr == 1:
                     add_banner(tmp_poster, banner_dv, poster_size)
-                elif "hdr10+" in hdr and config[0].hdr == 1:
+                elif "hdr10+" in hdr and config.hdr == 1:
                     add_banner(tmp_poster, banner_hdr10, poster_size)
-                elif hdr != "" and config[0].hdr == 1:
+                elif hdr != "" and config.hdr == 1:
                     add_banner(tmp_poster, banner_new_hdr, poster_size)
             except:
                 pass
@@ -962,18 +1040,22 @@ def tv_banner_decision(ep, tmp_poster, banners, audio, hdr, resolution, poster_s
     
 
 def film_banner_decision(i, tmp_poster, banners, poster_size, res, audio, hdr):
+    logger = get_logger()
+    config = get_config()
+    load_image_assets()  # Load images when needed
+    
     logger.debug("Banner Decision")
     wide_banner = banners[0]
     mini_banner = banners[1]
     audio_banner = banners[2]
     hdr_banner = banners[3]
-    if (audio_banner == False and config[0].audio_posters == 1):
+    if (audio_banner == False and config.audio_posters == 1):
         logger.debug("AUDIO decision: "+audio)         
         if 'atmos' in audio:
             add_banner(tmp_poster, atmos, poster_size)
         elif audio == 'dts:x': 
             add_banner(tmp_poster, atmos, poster_size)
-    if (hdr_banner == False and config[0].hdr == 1):
+    if (hdr_banner == False and config.hdr == 1):
         logger.debug("HDR: "+hdr) 
         if 'dolby vision' in str.lower(hdr):
             add_banner(tmp_poster, banner_dv, poster_size)
@@ -993,9 +1075,9 @@ def film_banner_decision(i, tmp_poster, banners, poster_size, res, audio, hdr):
         i.addLabel('Dolby Atmos', locked=False)
     elif audio == 'dts:x':
         i.addLabel('DTS:X', locked=False) 
-    if (res == '4k' and config[0].films4kposters == 1):
+    if (res == '4k' and config.films4kposters == 1):
         if wide_banner == mini_banner == False:
-            if config[0].mini4k == 1:
+            if config.mini4k == 1:
                 add_banner(tmp_poster, mini_4k_banner, poster_size)
             else:
                 add_banner(tmp_poster, banner_4k, poster_size)
@@ -1007,4 +1089,4 @@ def clear_old_posters():
     dirpath = '/tmp/'
     for files in os.listdir(dirpath):
         if files.endswith(".png"):
-            os.remove(dirpath+files) 
+            os.remove(dirpath+files)

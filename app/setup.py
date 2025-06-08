@@ -11,10 +11,11 @@ def setup_helper():
     def continue_setup():
         def add_new_columns():
             #log.debug('Adding new Columns')
-            conn = sqlite3.connect('/config/app.db')
-            c = conn.cursor()
-            c.execute("SELECT * FROM plex_utills")
-            config = c.fetchall()
+
+            conn = sqlite3.connect("/config/app.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM plex_utills")
+        config = c.fetchall()
             query1 = """ALTER TABLE plex_utills
                     ADD COLUMN autocollections INT
                     """
@@ -148,10 +149,11 @@ def setup_helper():
         def update_plex_path():
             import requests
             try:
-                conn = sqlite3.connect('/config/app.db')
-                c = conn.cursor()
-                c.execute("SELECT * FROM plex_utills")
-                config = c.fetchall()
+
+                conn = sqlite3.connect("/config/app.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM plex_utills")
+        config = c.fetchall()
                 plex = PlexServer(config[0][1], config[0][2])
                 lib = config[0][3].split(',')
                 if len(lib) <= 2:
@@ -164,7 +166,7 @@ def setup_helper():
                 media_location = films.search(limit='1')
 
                 if config[0][37] == 1:
-                    plexpath = config[0][38]
+                    plexpath = config[0][37]field
                     c.execute("UPDATE plex_utills SET plexpath = '"+plexpath+"' WHERE ID = 1;")
                     conn.commit()
                     c.close()
@@ -179,10 +181,11 @@ def setup_helper():
                     conn.commit()
                     c.close()
             except Exception:
-                conn = sqlite3.connect('/config/app.db')
-                c = conn.cursor()
-                c.execute("SELECT * FROM plex_utills")
-                config = c.fetchall()
+
+                conn = sqlite3.connect("/config/app.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM plex_utills")
+        config = c.fetchall()
                 plex = PlexServer(config[0][1], config[0][2])
                 lib = config[0][3].split(',')
                 if len(lib) <= 2:

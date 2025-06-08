@@ -21,7 +21,8 @@ def continue_setup():
     
     def add_new_columns():
         #log.debug('Adding new Columns')
-        conn = sqlite3.connect('/config/app.db')
+
+        conn = sqlite3.connect("/config/app.db")
         c = conn.cursor()
         c.execute("SELECT * FROM plex_utills")
         config = c.fetchall()

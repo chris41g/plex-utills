@@ -23,33 +23,37 @@ def get_version():
     with open('./version') as f: s = f.read()
     return s
 version = get_version()
-@app.before_first_request
+first_request = True
+
+@app.before_request
 def update_plex_path():
+    global first_request
+    if first_request:
+        first_request = False
 
     import requests
     import re
     from plexapi.server import PlexServer
     try:
-        conn = sqlite3.connect('/config/app.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM plex_utills")
-        config = c.fetchall()
-        plex = PlexServer(config[0][1], config[0][2])
-        lib = config[0][3].split(',')
+        from app.models import Plex
+
+        config = Plex.query.filter(Plex.id == "1").all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
+        lib = config[0].filmslibrary.split(',')
         if len(lib) <= 2:
             try:
                 films = plex.library.section(lib[0])
             except IndexError:
                 pass
         else:
-            films = plex.library.section(config[0][3])
+            films = plex.library.section(config[0].filmslibrary)
         media_location = films.search(limit='1')
-        if config[0][37] == 1:
-            plexpath = config[0][38]
+        if config[0].manualplexpath == 1:
+            plexpath = config[0].manualplexpathfield
             c.execute("UPDATE plex_utills SET plexpath = '"+plexpath+"' WHERE ID = 1;")
             conn.commit()
             c.close()
-        elif config[0][37] == 0:
+        elif config[0].manualplexpath == 0:
             filepath = os.path.dirname(os.path.dirname(media_location[0].media[0].parts[0].file))
             try:
                 plexpath = '/'+filepath.split('/')[2]
@@ -61,28 +65,27 @@ def update_plex_path():
             c.close()
     except Exception:
         try:
-            conn = sqlite3.connect('/config/app.db')
-            c = conn.cursor()
-            c.execute("SELECT * FROM plex_utills")
-            config = c.fetchall()
-            plex = PlexServer(config[0][1], config[0][2])
-            lib = config[0][3].split(',')
+            from app.models import Plex
+
+            config = Plex.query.filter(Plex.id == "1").all()
+            plex = PlexServer(config[0].plexurl, config[0].token)
+            lib = config[0].filmslibrary.split(',')
             if len(lib) <= 2:
                 try:
                     films = plex.library.section(lib[0])
                 except IndexError:
                     pass
             else:
-                films = plex.library.section(config[0][3])     
+                films = plex.library.section(config[0].filmslibrary)     
             media_location = films.search(limit='1')
             for i in media_location:
-                if config[0][37] == 1:
-                    newdir = os.path.dirname(re.sub(config[0][5], '/films', i.media[0].parts[0].file))+'/'
-                elif config[0][37] == 0:
-                    if config[0][5] == '/':
+                if config[0].manualplexpath == 1:
+                    newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
+                elif config[0].manualplexpath == 0:
+                    if config[0].plexpath == '/':
                         newdir = '/films'+i.media[0].parts[0].file
                     else:
-                        newdir = os.path.dirname(re.sub(config[0][5], '/films', i.media[0].parts[0].file))+'/'
+                        newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
         except:pass
 
 @app.route('/')
@@ -296,7 +299,7 @@ def run_recreate_hdr_script():
 
 @app.route('/maintenance')
 def run_maintenance():
-    Thread(target=scripts.maintenance).start()
+    Thread(target=scripts.maintenance, args=[app]).start()
     return render_template('script_log_viewer.html', pagetitle='Script Logs', version=version)
 
 @app.route('/check_backup_posters')
