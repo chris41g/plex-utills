@@ -21,13 +21,8 @@ RUN apt-get update && apt-get upgrade -y && \
         libxext6 \
         nano \
         curl \
-        gpg \
+        mediainfo \
         && \
-    # Install MediaInfo with updated repository
-    curl -fsSL https://mediaarea.net/repo/deb/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/mediaarea-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mediaarea-keyring.gpg] https://mediaarea.net/repo/deb/debian bullseye main" > /etc/apt/sources.list.d/mediaarea.list && \
-    apt-get update && \
-    apt-get install -y mediainfo && \
     # Clean up
     rm -rf /var/lib/apt/lists/*
 
