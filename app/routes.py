@@ -23,8 +23,13 @@ def get_version():
     with open('./version') as f: s = f.read()
     return s
 version = get_version()
-@app.before_first_request
+first_request = True
+
+@app.before_request
 def update_plex_path():
+    global first_request
+    if first_request:
+        first_request = False
 
     import requests
     import re
