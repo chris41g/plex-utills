@@ -2040,12 +2040,13 @@ def add_labels(app):
                 pass 
 
 def maintenance(app):
+    with app.app_context():
         with app.app_context():
-                config = Plex.query.filter(Plex.id == '1')
-        plex = PlexServer(config[0].plexurl, config[0].token)
-        plex.runButlerTask('CleanOldCacheFiles') 
-        plex.runButlerTask('CleanOldBundles')
-        lib = config[0].filmslibrary.split(',')
+                    config = Plex.query.filter(Plex.id == '1')
+            plex = PlexServer(config[0].plexurl, config[0].token)
+            plex.runButlerTask('CleanOldCacheFiles') 
+            plex.runButlerTask('CleanOldBundles')
+            lib = config[0].filmslibrary.split(',')
         def clean_database(table, library):
             r = table.query.all()
             for i in r:
@@ -2077,17 +2078,30 @@ def maintenance(app):
                         clean_database(film_table, films)
             except IndexError:
                 pass          
-        tvlib = config[0].tvlibrary.split(',')
-        logger.debug(lib)
-        if len(tvlib) <= 2:
-            try:
-                ##while true:
-                    for l in range(10):
-                        tv = plex.library.section(lib[l])
+        # Clean TV database ONLY if TV features are enabled
+        tvlib = config[0].tvlibrary
+        if tvlib and tvlib.strip():  # Check if TV library is configured
+            tvlib_list = tvlib.split(",")
+            tv_n = len(tvlib_list)
+            
+            # Only scan TV if any TV-related features are enabled
+            tv_features_enabled = (
+                config[0].tv4kposters == 1 or
+                getattr(config[0], "spoilers", 0) == 1
+            )
+            
+            if tv_features_enabled and tv_n <= 2:
+                try:
+                    for l in range(tv_n):  # Use actual number of TV libraries
+                        tv = plex.library.section(tvlib_list[l])  # Use correct TV library variable
                         clean_database(ep_table, tv)
                         clean_database(season_table, tv)
-            except IndexError:
-                pass 
+                except IndexError:
+                    pass
+            else:
+                logger.info("TV features disabled, skipping TV database cleanup")
+        else:
+            logger.info("No TV library configured, skipping TV database cleanup")
 
         module.clear_old_posters()
 
