@@ -2039,10 +2039,9 @@ def add_labels(app):
             except IndexError:
                 pass 
 
-def maintenance():
-        from app.models import Plex, film_table, ep_table, season_table
-        from app import db, module
-        config = Plex.query.filter(Plex.id == '1')
+def maintenance(app):
+        with app.app_context():
+                config = Plex.query.filter(Plex.id == '1')
         plex = PlexServer(config[0].plexurl, config[0].token)
         plex.runButlerTask('CleanOldCacheFiles') 
         plex.runButlerTask('CleanOldBundles')

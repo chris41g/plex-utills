@@ -301,7 +301,7 @@ def run_recreate_hdr_script():
 
 @app.route('/maintenance')
 def run_maintenance():
-    Thread(target=scripts.maintenance).start()
+    Thread(target=scripts.maintenance, args=[app]).start()
     return render_template('script_log_viewer.html', pagetitle='Script Logs', version=version)
 
 @app.route('/check_backup_posters')
