@@ -2041,12 +2041,13 @@ def add_labels(app):
 
 def maintenance(app):
     with app.app_context():
-        with app.app_context():
-                    config = Plex.query.filter(Plex.id == '1')
-            plex = PlexServer(config[0].plexurl, config[0].token)
-            plex.runButlerTask('CleanOldCacheFiles') 
-            plex.runButlerTask('CleanOldBundles')
-            lib = config[0].filmslibrary.split(',')
+        from app.models import Plex, film_table, ep_table, season_table
+        from app import db, module
+        config = Plex.query.filter(Plex.id == '1')
+        plex = PlexServer(config[0].plexurl, config[0].token)
+        plex.runButlerTask('CleanOldCacheFiles')
+        plex.runButlerTask('CleanOldBundles')
+        
         def clean_database(table, library):
             r = table.query.all()
             for i in r:
@@ -2055,7 +2056,7 @@ def maintenance(app):
                     pass
                     #print(f.title+" exists")
                 else:
-                    logger.info("Removing "+i.title+"from database")
+                    logger.info("Removing "+i.title+" from database")
                     poster = re.sub("static", "/config", i.poster)
                     b_poster = re.sub("static", "/config", i.bannered_poster)
                     try:
@@ -2068,26 +2069,30 @@ def maintenance(app):
                         row = table.query.get(i.id)
                         db.session.delete(row)
                         db.session.commit()
-                    except: db.session.rollback()  
+                    except: 
+                        db.session.rollback()
+        
+        # Clean film database
+        lib = config[0].filmslibrary.split(',')
         n = len(lib)
         if n <= 2:
             try:
-                ##while true:
-                    for l in range(n):
-                        films = plex.library.section(lib[l])
-                        clean_database(film_table, films)
+                for l in range(n):
+                    films = plex.library.section(lib[l])
+                    clean_database(film_table, films)
             except IndexError:
-                pass          
+                pass
+        
         # Clean TV database ONLY if TV features are enabled
         tvlib = config[0].tvlibrary
         if tvlib and tvlib.strip():  # Check if TV library is configured
-            tvlib_list = tvlib.split(",")
+            tvlib_list = tvlib.split(',')
             tv_n = len(tvlib_list)
             
             # Only scan TV if any TV-related features are enabled
             tv_features_enabled = (
                 config[0].tv4kposters == 1 or
-                getattr(config[0], "spoilers", 0) == 1
+                getattr(config[0], 'spoilers', 0) == 1
             )
             
             if tv_features_enabled and tv_n <= 2:
