@@ -2045,8 +2045,36 @@ def maintenance(app):
         from app import db, module
         config = Plex.query.filter(Plex.id == '1')
         plex = PlexServer(config[0].plexurl, config[0].token)
-        plex.runButlerTask('CleanOldCacheFiles')
-        plex.runButlerTask('CleanOldBundles')
+        try:
+
+            plex.runButlerTask('CleanOldCacheFiles')
+
+            logger.info("Butler task 'CleanOldCacheFiles' queued successfully")
+
+        except Exception as e:
+
+            if "202" in str(e) or "accepted" in str(e).lower():
+
+                logger.info("Butler task 'CleanOldCacheFiles' accepted by Plex (HTTP 202)")
+
+            else:
+
+                logger.warning(f"Butler task 'CleanOldCacheFiles' failed: {e}")
+        try:
+
+            plex.runButlerTask('CleanOldBundles')
+
+            logger.info("Butler task 'CleanOldBundles' queued successfully")
+
+        except Exception as e:
+
+            if "202" in str(e) or "accepted" in str(e).lower():
+
+                logger.info("Butler task 'CleanOldBundles' accepted by Plex (HTTP 202)")
+
+            else:
+
+                logger.warning(f"Butler task 'CleanOldBundles' failed: {e}")
         
         def clean_database(table, library):
             r = table.query.all()
