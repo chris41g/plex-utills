@@ -2520,6 +2520,12 @@ def get_tmdb_season_posters(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tmdb_season_posters")
+        return []
     tmdbtvs = Season()
     def run_script():
         posters = []
@@ -2557,6 +2563,12 @@ def get_tmdb_episode_posters(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tmdb_episode_posters")
+        return []
     tmdbtv = Episode()
     def run_script():
         posters = []
@@ -2840,7 +2852,7 @@ def get_film_posters():
     if n <= 2:
         try:
             for l in range(n):
-                film_lib= plex.library.section(lib[l])
+                film_lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 films = run_script()
             return films
         except IndexError:
@@ -2863,7 +2875,7 @@ def get_shows():
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 shows = run_script()
             return shows
         except IndexError:
@@ -2873,6 +2885,12 @@ def get_tv_seasons(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tv_seasons")
+        return []
     from app.items import Season
     seasons = []
     def run_script():
@@ -2886,7 +2904,7 @@ def get_tv_seasons(var):
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2896,6 +2914,12 @@ def get_tv_episodes(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_tv_episodes")
+        return []
     from app.items import Episode
     episodes = []
     def run_script():
@@ -2909,7 +2933,7 @@ def get_tv_episodes(var):
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:
@@ -2919,6 +2943,12 @@ def get_season_posters(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_season_posters")
+        return []
     from app.items import Season
     seasons = []    
     def run_script():
@@ -2932,7 +2962,7 @@ def get_season_posters(var):
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2942,6 +2972,12 @@ def get_episode_posters(var):
     from app.models import Plex
     config = Plex.query.filter(Plex.id == '1')
     plex = PlexServer(config[0].plexurl, config[0].token)
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_episode_posters")
+        return []
     from app.items import Episode
     episodes = []
     def run_script():
@@ -2955,7 +2991,7 @@ def get_episode_posters(var):
     if n <= 2:
         try:
             for l in range(n):
-                lib= plex.library.section(lib[l])
+                lib = plex.library.section(lib[l]) if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:
