@@ -363,7 +363,16 @@ def guid_to_title(app, var):
             def run_script():
                 tv_episode_poster(app, var, '')
 
-            lib = config[0].tvlibrary.split(',')
+            tvlib = config[0].tvlibrary
+
+
+            if not tvlib or not tvlib.strip():
+
+
+                return []
+
+
+            lib = tvlib.split(',')
             logger.debug(lib)
             n = len(lib)
             if n <= 2:
@@ -378,7 +387,16 @@ def guid_to_title(app, var):
             def run_script():
                 tv_episode_poster(app, var, '')
 
-            lib = config[0].tvlibrary.split(',')
+            tvlib = config[0].tvlibrary
+
+
+            if not tvlib or not tvlib.strip():
+
+
+                return []
+
+
+            lib = tvlib.split(',')
             logger.debug(lib)
             n = len(lib)
             if n <= 2:
@@ -646,7 +664,16 @@ def tv_episode_poster(app, epwebhook, poster):
             #module.clear_old_posters()  
             logger.info("tv Poster Script has finished")
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -769,7 +796,16 @@ def restore_episodes_from_database(app, b_dir):
 
             logger.info('Finished restoring TV Posters')
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -883,7 +919,16 @@ def restore_episode_from_database(app, var):
                         restore_tmdb('', b_file)
             logger.info('Finished restoring TV Posters')
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1177,7 +1222,13 @@ def restore_seasons(app):
                         except Exception as e:
                             logger.error(repr(e))
                             pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1212,7 +1263,13 @@ def restore_single_season(app, var):
                     db.session.commit()
                 except (TypeError, IndexError, FileNotFoundError) as e:
                     logger.error(repr(e)) 
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+ 
+        if not tvlib or not tvlib.strip():
+ 
+            return []
+ 
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1251,7 +1308,16 @@ def restore_single_bannered_season(app, var):
                     logger.error(repr(e)) 
                     return msg
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -1291,7 +1357,16 @@ def restore_single_bannered_episode(app, var):
                     logger.error(repr(e)) 
                     return msg
             
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+            
+        if not tvlib or not tvlib.strip():
+
+            
+            return []
+
+            
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -2503,7 +2578,13 @@ def get_tmdb_show_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2546,7 +2627,13 @@ def get_tmdb_season_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2591,7 +2678,13 @@ def get_tmdb_episode_posters(var):
                     posters.append(poster.file_path)
         #print(posters)
         return posters
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+
+    if not tvlib or not tvlib.strip():
+
+        return []
+
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
@@ -2692,7 +2785,13 @@ def upload_tmdb_season(app, var):
             except Exception as e:
                 logger.error("Season poster Error: "+repr(e))
                 pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -2822,7 +2921,13 @@ def upload_tmdb_episode(app, var):
             except Exception as e:
                 logger.error("Episode poster Error: "+repr(e))
                 pass
-        lib = config[0].tvlibrary.split(',')
+        tvlib = config[0].tvlibrary
+
+        if not tvlib or not tvlib.strip():
+
+            return []
+
+        lib = tvlib.split(',')
         logger.debug(lib)
         n = len(lib)
         if n <= 2:
@@ -2864,18 +2969,40 @@ def get_shows():
     plex = PlexServer(config[0].plexurl, config[0].token)
     from app.items import Shows
     shows = []
+    
+    # Check if TV library is configured
+    tvlib = config[0].tvlibrary
+    if not tvlib or not tvlib.strip():
+        logger.warning("No TV library configured for get_shows")
+        return []
+    
     def run_script():
-        
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='show'):
             shows.append(Shows(i.title, i.guid, i.thumbUrl, ''))
         return shows   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib = plex.library.section(lib[l]) if lib[l].strip() else None
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 shows = run_script()
             return shows
         except IndexError:
@@ -2894,17 +3021,33 @@ def get_tv_seasons(var):
     from app.items import Season
     seasons = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='season', filters={"show.guid":var}):
             show_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             seasons.append(Season(i.title, i.parentTitle, i.guid, i.thumbUrl, '', show_poster, i.parentGuid))
         return seasons   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib = plex.library.section(lib[l]) if lib[l].strip() else None
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2923,17 +3066,33 @@ def get_tv_episodes(var):
     from app.items import Episode
     episodes = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='episode', filters={"season.guid":var}):
             season_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             episodes.append(Episode(i.title, i.parentTitle, i.grandparentTitle, i.guid, i.thumbUrl, '', season_poster, i.parentGuid))
         return episodes   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib = plex.library.section(lib[l]) if lib[l].strip() else None
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:
@@ -2952,17 +3111,33 @@ def get_season_posters(var):
     from app.items import Season
     seasons = []    
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='season', guid=var):
             show_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             seasons.append(Season(i.title, i.parentTitle, i.guid, i.thumbUrl, '', show_poster, i.parentGuid))
         return seasons   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib = plex.library.section(lib[l]) if lib[l].strip() else None
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 seasons = run_script()
             return seasons
         except IndexError:
@@ -2981,17 +3156,33 @@ def get_episode_posters(var):
     from app.items import Episode
     episodes = []
     def run_script():
+        if lib is None:
+
+            return []
+
         for i in lib.search(libtype='episode', guid=var):
             season_poster = config[0].plexurl+i.parentThumb+'?X-Plex-Token='+config[0].token
             episodes.append(Episode(i.title, i.parentTitle, i.grandparentTitle, i.guid, i.thumbUrl, '', season_poster, i.parentGuid))
         return episodes   
-    lib = config[0].tvlibrary.split(',')
+    tvlib = config[0].tvlibrary
+   
+    if not tvlib or not tvlib.strip():
+   
+        return []
+   
+    lib = tvlib.split(',')
     logger.debug(lib)
     n = len(lib)
     if n <= 2:
         try:
             for l in range(n):
-                lib = plex.library.section(lib[l]) if lib[l].strip() else None
+                if lib[l] and lib[l].strip():
+
+                    lib = plex.library.section(lib[l])
+
+                else:
+
+                    return [] if lib[l].strip() else None
                 episodes = run_script()
             return episodes
         except IndexError:
