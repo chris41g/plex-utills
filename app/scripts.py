@@ -76,8 +76,8 @@ def posters4k(app, webhooktitle, poster_var):
         from app.models import Plex, film_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         global b_dir
         tmdb.api_key = config[0].tmdb_api
         b_dir = 'static/backup/films/'
@@ -415,8 +415,8 @@ def tv_episode_poster(app, epwebhook, poster):
         from app.models import Plex, ep_table, season_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         banner_4k_icon = Image.open("app/img/tv/4k.png")
         banner_bg = Image.open("app/img/tv/Background.png")
         banner_dv = Image.open("app/img/tv/dolby_vision.png")
@@ -689,7 +689,7 @@ def restore_episodes_from_database(app, b_dir):
         from app.models import Plex, ep_table
         from app import db, module
         from tmdbv3api import TMDb, Search, Movie, Discover, TV, Episode
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         tmdb = TMDb()
@@ -822,7 +822,7 @@ def restore_episode_from_database(app, var):
         from app.models import Plex, ep_table
         from app import db, module
         from tmdbv3api import TMDb, Search, Movie, Discover, TV, Episode
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tmdb = TMDb()
         poster_url_base = 'https://www.themoviedb.org/t/p/original'
@@ -943,8 +943,8 @@ def restore_episode_from_database(app, var):
 def posters3d(app): 
     with app.app_context():
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
         plex = PlexServer(config[0].plexurl, config[0].token)
@@ -1055,7 +1055,7 @@ def restore_from_database(app):
     with app.app_context():    
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         films = plex.library.section('Films')
         def convert_data(data, file_name):
@@ -1095,7 +1095,7 @@ def restore_from_database(app):
 def restore_single(var):
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         def run_script():
             for i in films.search(guid=var):
@@ -1132,7 +1132,7 @@ def restore_single(var):
 def restore_single_bannered(app, var):
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1176,7 +1176,7 @@ def restore_seasons(app):
         from app.models import Plex, season_table
         from app import db, module
         tmdbtvs = Season()
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         def run_script():
             advanced_filters = {
@@ -1243,7 +1243,7 @@ def restore_seasons(app):
 def restore_single_season(app, var):
         from app.models import Plex, season_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         def run_script():
             for i in tv.search(guid=var, libtype='season', limit=1):
@@ -1284,7 +1284,7 @@ def restore_single_season(app, var):
 def restore_single_bannered_season(app, var):
         from app.models import Plex, season_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1332,7 +1332,7 @@ def restore_single_bannered_season(app, var):
 def restore_single_bannered_episode(app, var):
         from app.models import Plex, ep_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         msg = 'no message'
         def run_script():
@@ -1381,8 +1381,8 @@ def restore_single_bannered_episode(app, var):
 def hide4k(app):
     with app.app_context(): 
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
         def run_script():
 
@@ -1431,7 +1431,7 @@ def hide4k(app):
 def fresh_hdr_posters(app):
     with app.app_context(): 
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
@@ -1489,8 +1489,8 @@ def autocollections(app):
     with app.app_context(): 
         logger.info('Autocollections has started')
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
 
         plex = PlexServer(config[0].plexurl, config[0].token)
@@ -1717,7 +1717,7 @@ def test_script(app):
     with app.app_context(): 
         from app.models import Plex, film_table
         from app import db
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         films = plex.library.section('films')
 
@@ -2083,8 +2083,8 @@ def add_labels(app):
     with app.app_context(): 
 
         from app.models import Plex, film_table
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         def run_script():
             logger.info('Adding Film Labels')
             for i in films.search(sort='random'):
@@ -2118,8 +2118,8 @@ def maintenance(app):
     with app.app_context():
         from app.models import Plex, film_table, ep_table, season_table
         from app import db, module
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         try:
 
             plex.runButlerTask('CleanOldCacheFiles')
@@ -2219,8 +2219,8 @@ def collective4k(app):
         from time import sleep
         sleep(5)
         from app.models import Plex
-        config = Plex.query.filter(Plex.id == '1').first()
-        if config.tv4kposters == 1:
+        config = Plex.query.filter(Plex.id == '1').all()
+        if config[0].tv4kposters == 1:
             logger.info('Starting 4k Tv poster script')
             tv_episode_poster(app, '', '')
 
@@ -2228,8 +2228,8 @@ def restore_posters(app):
     with app.app_context(): 
         from app.models import Plex, film_table
         from app import db, module
-        config = Plex.query.filter(Plex.id == '1').first()
-        plex = PlexServer(config.plexurl, config[0].token)
+        config = Plex.query.filter(Plex.id == '1').all()
+        plex = PlexServer(config[0].plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api   
 
         plex = PlexServer(config[0].plexurl, config[0].token)
@@ -2359,7 +2359,7 @@ def spoilers(app, guid):
         from app.models import Plex, ep_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         size = (1280,720)
@@ -2434,7 +2434,7 @@ def get_tv_guid(tv_show, season, episode):
         from app.models import Plex, ep_table
         from app import db
         from app import module
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tv = plex.library.section(config[0].tvlibrary)
         for ep in tv.search(filters={"show.title":tv_show, "episode.index":episode, "season.index":season}):
@@ -2483,7 +2483,7 @@ def sync_ratings(app):
     with app.app_context():        
         from app.models import Plex
         from app import module
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         tmdb.api_key = config[0].tmdb_api
         films = plex.library.section('Films')
@@ -2557,7 +2557,7 @@ def backup_poster_check(app):
 
 def get_tmdb_show_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     tmdbtvs = TV()
     def run_script():
@@ -2599,7 +2599,7 @@ def get_tmdb_show_posters(var):
 
 def get_tmdb_season_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     
     # Check if TV library is configured
@@ -2648,7 +2648,7 @@ def get_tmdb_season_posters(var):
 
 def get_tmdb_episode_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     
     # Check if TV library is configured
@@ -2699,7 +2699,7 @@ def get_tmdb_episode_posters(var):
 
 def get_tmdb_film_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     tmdb = Movie()
     def run_script():
@@ -2737,7 +2737,7 @@ def upload_tmdb_season(app, var):
 
         from app import db, module
         from app.models import season_table, ep_table, Plex
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         size = (2000,3000)
         parts = var.split('&')
@@ -2806,7 +2806,7 @@ def upload_tmdb_season(app, var):
 def upload_tmdb_film(app, var):
         from app import db, module
         from app.models import film_table, Plex
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         size = (2000,3000)
         parts = var.split('&')
@@ -2862,7 +2862,7 @@ def upload_tmdb_film(app, var):
 def upload_tmdb_episode(app, var):
         from app import db, module
         from app.models import season_table, ep_table, Plex
-        config = Plex.query.filter(Plex.id == '1').first()
+        config = Plex.query.filter(Plex.id == '1').all()
         plex = PlexServer(config.plexurl, config[0].token)
         size = (1280,720)
         parts = var.split('&')
@@ -2942,7 +2942,7 @@ def upload_tmdb_episode(app, var):
 def get_film_posters():
 
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     from app.items import Film
     films = []
@@ -2965,8 +2965,8 @@ def get_film_posters():
 
 def get_shows():
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
-    plex = PlexServer(config.plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').all()
+    plex = PlexServer(config[0].plexurl, config[0].token)
     from app.items import Shows
     shows = []
     
@@ -3010,8 +3010,8 @@ def get_shows():
 
 def get_tv_seasons(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
-    plex = PlexServer(config.plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').all()
+    plex = PlexServer(config[0].plexurl, config[0].token)
     
     # Check if TV library is configured
     tvlib = config[0].tvlibrary
@@ -3055,8 +3055,8 @@ def get_tv_seasons(var):
   
 def get_tv_episodes(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
-    plex = PlexServer(config.plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').all()
+    plex = PlexServer(config[0].plexurl, config[0].token)
     
     # Check if TV library is configured
     tvlib = config[0].tvlibrary
@@ -3100,7 +3100,7 @@ def get_tv_episodes(var):
 
 def get_season_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     
     # Check if TV library is configured
@@ -3145,7 +3145,7 @@ def get_season_posters(var):
 
 def get_episode_posters(var):
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1').first()
+    config = Plex.query.filter(Plex.id == '1').all()
     plex = PlexServer(config.plexurl, config[0].token)
     
     # Check if TV library is configured
