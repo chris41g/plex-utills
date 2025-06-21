@@ -1775,7 +1775,7 @@ def fill_database(app):
                     except TypeError:
                         logger.info("RESTORE: "+i.title+" This poster could not be found on TheMoviedb")
                         pass                            
-                def scan_files():
+                def scan_files(config, i, plex):
                         try:
                             logger.debug('Scanning '+i.title)
                             file = re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file)
