@@ -1835,7 +1835,7 @@ def fill_database(app):
 
                 def updateTable(hdr, audio, tmp_poster):
                     if config[0][37] == 1:
-                        newdir = os.path.dirname(re.sub(config[0][37]field, '/films', i.media[0].parts[0].file))+'/'
+                        newdir = os.path.dirname(re.sub(config[0][38], '/films', i.media[0].parts[0].file))+'/'
                     else:
                         newdir = os.path.dirname(re.sub(config[0][5], '/films', i.media[0].parts[0].file))+'/'
                     backup = os.path.exists(newdir+'poster_bak.png')
@@ -1855,7 +1855,7 @@ def fill_database(app):
 
                 def backup_poster(tmp_poster):
                     if config[0][37] == 1:
-                        newdir = os.path.dirname(re.sub(config[0][37]field, '/films', i.media[0].parts[0].file))+'/'
+                        newdir = os.path.dirname(re.sub(config[0][38], '/films', i.media[0].parts[0].file))+'/'
                     else:
                         newdir = os.path.dirname(re.sub(config[0][5], '/films', i.media[0].parts[0].file))+'/'
                     old_backup = os.path.exists(newdir+'poster_bak.png')
