@@ -460,8 +460,8 @@ def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, 
         fname = re.sub('plex://season/', '', guid)
     logger.debug(fname)
     
-    if config.manualplexpath == 1:
-        newdir = os.path.dirname(re.sub(config.manualplexpathfield, '/films', i.media[0].parts[0].file))+'/'
+    if config[0].manualplexpath == 1:
+        newdir = os.path.dirname(re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file))+'/'
     else:
         newdir = os.path.dirname(re.sub(config.plexpath, '/films', i.media[0].parts[0].file))+'/'
     try:
@@ -551,8 +551,8 @@ def insert_intoTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, ti
     p1 = re.findall('[A-Z]', p.parts[0])    
     if p1 != []:
         newdir = PurePosixPath('/films', *p.parts[1:])
-    elif config.manualplexpath == 1:
-        newdir = re.sub(config.manualplexpathfield, '/films', i.media[0].parts[0].file)
+    elif config[0].manualplexpath == 1:
+        newdir = re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file)
     else:
         newdir = re.sub(config.plexpath, '/films', i.media[0].parts[0].file)           
     logger.debug(title+' '+hdr+' '+audio)
