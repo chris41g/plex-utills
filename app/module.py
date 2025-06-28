@@ -50,7 +50,7 @@ def get_config():
 def get_plex_server():
     """Get PlexServer instance - must be called within Flask app context"""
     config = get_config()
-    return PlexServer(config.plexurl, config.token)
+    return PlexServer(config[0].plexurl, config[0].token)
 
 def get_logger():
     """Get logger to avoid circular import issues"""
@@ -107,7 +107,7 @@ def get_tmdb_guid(g):
 def tmdb_poster_path(b_dir, i, g, episode, season):
     logger = get_logger()
     config = get_config()
-    tmdb.api_key = config.tmdb_api
+    tmdb.api_key = config[0].tmdb_api
     
     if episode == '':
         logger.debug("is a film")
@@ -280,9 +280,9 @@ def get_season_poster(ep, tmp_poster, config):
     title = ep.title
     height=3000
     width=2000
-    #logger.debug(config.plexurl+ep.parentThumb+'?X-Plex-Token='+config.token)
+    #logger.debug(config[0].plexurl+ep.parentThumb+'?X-Plex-Token='+config[0].token)
     imgurl = plex.transcodeImage(
-        config.plexurl+ep.parentThumb+'?X-Plex-Token='+config.token,
+        config[0].plexurl+ep.parentThumb+'?X-Plex-Token='+config[0].token,
         height=height,
         width=width,
         imageFormat='png'
@@ -463,7 +463,7 @@ def backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, 
     if config[0].manualplexpath == 1:
         newdir = os.path.dirname(re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file))+'/'
     else:
-        newdir = os.path.dirname(re.sub(config.plexpath, '/films', i.media[0].parts[0].file))+'/'
+        newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
     try:
         old_backup = os.path.exists(newdir+'poster_bak.png')
         if old_backup == True:
@@ -554,7 +554,7 @@ def insert_intoTable(guid, guids, size, res, hdr, audio, tmp_poster, banners, ti
     elif config[0].manualplexpath == 1:
         newdir = re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file)
     else:
-        newdir = re.sub(config.plexpath, '/films', i.media[0].parts[0].file)           
+        newdir = re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file)           
     logger.debug(title+' '+hdr+' '+audio)
     if blurred == False:  
         b_file = backup_poster(tmp_poster, banners, config, r, i, b_dir, g, episode, season, guid)
