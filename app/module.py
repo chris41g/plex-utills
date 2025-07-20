@@ -15,7 +15,7 @@ from app.models import Plex
 
 
 # REMOVED: These module-level database queries cause Flask application context errors
-# config = Plex.query.filter(Plex.id == '1')
+# config = Plex.query.filter(Plex.id == '1').first()
 # plex = PlexServer(config.plexurl, config.token)
 
 # Initialize TMDB globals (these don't require Flask context)

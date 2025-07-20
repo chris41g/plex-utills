@@ -37,23 +37,23 @@ def update_plex_path():
     try:
         from app.models import Plex
 
-        config = Plex.query.filter(Plex.id == "1").all()
-        plex = PlexServer(config[0].plexurl, config[0].token)
-        lib = config[0].filmslibrary.split(',')
+        config = Plex.query.filter(Plex.id == '1').first().all()
+        plex = PlexServer(config.plexurl, config.token)
+        lib = config.filmslibrary.split(',')
         if len(lib) <= 2:
             try:
                 films = plex.library.section(lib[0])
             except IndexError:
                 pass
         else:
-            films = plex.library.section(config[0].filmslibrary)
+            films = plex.library.section(config.filmslibrary)
         media_location = films.search(limit='1')
-        if config[0].manualplexpath == 1:
-            plexpath = config[0].manualplexpathfield
+        if config.manualplexpath == 1:
+            plexpath = config.manualplexpathfield
             c.execute("UPDATE plex_utills SET plexpath = '"+plexpath+"' WHERE ID = 1;")
             conn.commit()
             c.close()
-        elif config[0].manualplexpath == 0:
+        elif config.manualplexpath == 0:
             filepath = os.path.dirname(os.path.dirname(media_location[0].media[0].parts[0].file))
             try:
                 plexpath = '/'+filepath.split('/')[2]
@@ -67,25 +67,25 @@ def update_plex_path():
         try:
             from app.models import Plex
 
-            config = Plex.query.filter(Plex.id == "1").all()
-            plex = PlexServer(config[0].plexurl, config[0].token)
-            lib = config[0].filmslibrary.split(',')
+            config = Plex.query.filter(Plex.id == '1').first().all()
+            plex = PlexServer(config.plexurl, config.token)
+            lib = config.filmslibrary.split(',')
             if len(lib) <= 2:
                 try:
                     films = plex.library.section(lib[0])
                 except IndexError:
                     pass
             else:
-                films = plex.library.section(config[0].filmslibrary)     
+                films = plex.library.section(config.filmslibrary)     
             media_location = films.search(limit='1')
             for i in media_location:
-                if config[0].manualplexpath == 1:
-                    newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
-                elif config[0].manualplexpath == 0:
-                    if config[0].plexpath == '/':
+                if config.manualplexpath == 1:
+                    newdir = os.path.dirname(re.sub(config.plexpath, '/films', i.media[0].parts[0].file))+'/'
+                elif config.manualplexpath == 0:
+                    if config.plexpath == '/':
                         newdir = '/films'+i.media[0].parts[0].file
                     else:
-                        newdir = os.path.dirname(re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file))+'/'
+                        newdir = os.path.dirname(re.sub(config.plexpath, '/films', i.media[0].parts[0].file))+'/'
         except:pass
 
 @app.route('/')
@@ -402,14 +402,14 @@ def get_episodes(var=''):
 def search():
     from plexapi.server import PlexServer
     from app.models import Plex
-    config = Plex.query.filter(Plex.id == '1')
-    plex = PlexServer(config[0].plexurl, config[0].token)   
+    config = Plex.query.filter(Plex.id == '1').first()
+    plex = PlexServer(config.plexurl, config.token)   
     from app.items import Film, Episode, Season, Shows
     if request.method == 'POST':
         F_results = E_results = S_results = ''
-        lib = config[0].filmslibrary.split(',')
+        lib = config.filmslibrary.split(',')
         n = len(lib)
-        tvlib = config[0].tvlibrary.split(',')
+        tvlib = config.tvlibrary.split(',')
         tvn = len(tvlib)
  
         F_results =[]

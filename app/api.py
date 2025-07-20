@@ -67,9 +67,9 @@ def run_delete_row(var=''):
 def restore_poster(var=""):
     scripts.restore_single(var)
     message = 'Sent poster to be restored.'
-    config = Plex.query.filter(Plex.id == '1')
-    lib = config[0].filmslibrary.split(',')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    lib = config.filmslibrary.split(',')
+    plexserver = PlexServer(config.plexurl, config.token)
     n = len(lib)
     if n >=2:
         for l in range(n):
@@ -86,9 +86,9 @@ def restore_poster(var=""):
 def restore_episode_poster(var=""):
     scripts.restore_episode_from_database(app, var)
     message = 'Sent poster to be restored.'
-    config = Plex.query.filter(Plex.id == '1')
-    lib = config[0].tvlibrary.split(',')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    lib = config.tvlibrary.split(',')
+    plexserver = PlexServer(config.plexurl, config.token)
     n = len(lib)
     if n >=2:
         for l in range(n):
@@ -104,9 +104,9 @@ def restore_episode_poster(var=""):
 def restore_season_poster(var=""):
     scripts.restore_single_season(app, var)
     message = 'Sent poster to be restored.'
-    config = Plex.query.filter(Plex.id == '1')
-    lib = config[0].tvlibrary.split(',')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    lib = config.tvlibrary.split(',')
+    plexserver = PlexServer(config.plexurl, config.token)
     n = len(lib)
     if n >=2:
         for l in range(n):
@@ -121,9 +121,9 @@ def restore_season_poster(var=""):
 @app.route('/restore/bannered_episode/<path:var>')
 def restore_bannerred_episode_poster(var=""):
     msg = scripts.restore_single_bannered_episode(app, var)
-    config = Plex.query.filter(Plex.id == '1')
-    lib = config[0].tvlibrary.split(',')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    lib = config.tvlibrary.split(',')
+    plexserver = PlexServer(config.plexurl, config.token)
     n = len(lib)
     if n >=2:
         for l in range(n):
@@ -142,9 +142,9 @@ def restore_bannerred_episode_poster(var=""):
 @app.route('/restore/bannered_season/<path:var>')
 def restore_bannerred_season_poster(var=""):
     msg = scripts.restore_single_bannered_season(app, var)
-    config = Plex.query.filter(Plex.id == '1')
-    lib = config[0].tvlibrary.split(',')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    lib = config.tvlibrary.split(',')
+    plexserver = PlexServer(config.plexurl, config.token)
     n = len(lib)
     if n >=2:
         for l in range(n):
@@ -357,9 +357,9 @@ def help():
     import shutil 
     from pathlib import PureWindowsPath, PurePosixPath
     file_paths = './app/static/img/tmp/'
-    config = Plex.query.filter(Plex.id == '1')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
-    lib = config[0].filmslibrary.split(',')
+    config = Plex.query.filter(Plex.id == '1').first()
+    plexserver = PlexServer(config.plexurl, config.token)
+    lib = config.filmslibrary.split(',')
     for root, dirs, files in os.walk(file_paths):
         for f in files:
             if f.endswith('.png'):# and 'poster_not_found' not in f):
@@ -400,10 +400,10 @@ def help():
                 log.debug(p1)
                 newdir = PurePosixPath('/films', *p.parts[1:])
                 log.debug(newdir)
-            elif config[0].manualplexpath == 1:
-                newdir = re.sub(config[0].manualplexpathfield, '/films', i.media[0].parts[0].file)
+            elif config.manualplexpath == 1:
+                newdir = re.sub(config.manualplexpathfield, '/films', i.media[0].parts[0].file)
             else:
-                newdir = re.sub(config[0].plexpath, '/films', i.media[0].parts[0].file)
+                newdir = re.sub(config.plexpath, '/films', i.media[0].parts[0].file)
         except:
             newdir = 'Can not be converted'
         log.debug(newdir)
@@ -595,8 +595,8 @@ def season_data():
 
 @app.route('/api/upload/<path:var>')
 def upload_tmdb_posters(var=''):
-    config = Plex.query.filter(Plex.id == '1')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    plexserver = PlexServer(config.plexurl, config.token)
     guid = var.split('&')
     guid = guid[1]
     poster=''
@@ -604,7 +604,7 @@ def upload_tmdb_posters(var=''):
     #print(guid)
     if 'movie' in guid:
         scripts.upload_tmdb_film(app, var)
-        lib = config[0].filmslibrary.split(',')
+        lib = config.filmslibrary.split(',')
         n = len(lib)
         if n >=2:
             for l in range(n):
@@ -617,7 +617,7 @@ def upload_tmdb_posters(var=''):
             poster = '/static/img/tmp/'+poster[1]
     if 'season' in guid:
         scripts.upload_tmdb_season(app, var)
-        lib = config[0].tvlibrary.split(',')
+        lib = config.tvlibrary.split(',')
         n = len(lib)
         if n >=2:
             for l in range(n):
@@ -630,7 +630,7 @@ def upload_tmdb_posters(var=''):
             poster = '/static/img/tmp/'+poster[1]
     if 'episode' in guid:
         scripts.upload_tmdb_episode(app, var)
-        lib = config[0].tvlibrary.split(',')
+        lib = config.tvlibrary.split(',')
         n = len(lib)
         if n >=2:
             for l in range(n):
@@ -644,12 +644,12 @@ def upload_tmdb_posters(var=''):
 
 @app.route('/api/process/<path:var>')
 def api_process(var=''):
-    config = Plex.query.filter(Plex.id == '1')
-    plexserver = PlexServer(config[0].plexurl, config[0].token)
+    config = Plex.query.filter(Plex.id == '1').first()
+    plexserver = PlexServer(config.plexurl, config.token)
     print(var)
     if 'movie' in var:
         scripts.guid_to_title(app, var)
-        lib = config[0].filmslibrary.split(',')
+        lib = config.filmslibrary.split(',')
         n = len(lib)
         if n >=2:
             for l in range(n):
